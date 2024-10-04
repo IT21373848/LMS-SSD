@@ -15,15 +15,21 @@ const LoginSuccess = () => {
             // Cookies.set('useRole', useRole, { expires: 1 });
             Cookies.set('firstName', firstName, { expires: 1 });
             login(useRole, token);
-            window.location.href = '/portal';
+            setTimeout(() => {
+                window.location.href = '/portal';
+            },3000)
         }
     }, [])
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-blue-400 to-purple-500">
             <div className="bg-white p-12 rounded-xl shadow-xl">
-                <h1 className="text-4xl font-bold">Login Success</h1>
-                <p className="text-lg mt-4">You have successfully logged in.</p>
+                <h1 className="text-6xl font-bold text-purple-700">Login Success</h1>
+                <p className="text-2xl mt-4">You have successfully logged in, {firstName}.</p>
+                <p className="text-lg mt-4">You will be redirected to the portal in a few seconds.</p>
+                <div className="flex items-center justify-center mt-8">
+                    <div className="w-16 h-16 border-b-2 border-blue-400 animate-spin rounded-full"></div>
+                </div>
             </div>
         </div>
     )
