@@ -13,6 +13,8 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { apiUrl } from '../../utils/Constants';
 import Logo from '../../components/Logo';
+import { RiFacebookBoxFill } from 'react-icons/ri';
+import authAxios from '../../utils/authAxios';
 
 const LOCK_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -24,9 +26,18 @@ export default function Login() {
   const { login } = useAuth();
 
   const handleSubmit = async (event) => {
+
     event.preventDefault();
     setBtnDisabled(true);
     const data = new FormData(event.currentTarget);
+    const payload = {
+      email: data.get('email'),
+      password: data.get('password'),
+    };
+    try {
+      const isLoggedin = await axios.post(`${apiUrl}/login`, payload);
+      if (isLoggedin) {
+        console.log(isLoggedin);
     const email = data.get('email');
     const password = data.get('password');
     
@@ -47,6 +58,12 @@ export default function Login() {
       const isLoggedin = await axios.post(`${apiUrl}/login`, payload);
       if (isLoggedin) {
         Cookies.set('firstName', isLoggedin.data.firstName);
+
+        // This is only for the PRIVATE MSG SHOW
+        if (isLoggedin.data.pvt == true) {
+          Cookies.set('pvt', 'true');
+        }
+        login(isLoggedin.data.userRole, isLoggedin.data.token)
         Cookies.remove(`failedAttempts_${email}`); // Reset failed attempts on success
         Cookies.remove(`lockTime_${email}`);
 
@@ -61,13 +78,21 @@ export default function Login() {
             toast.success('Login Success as a Student');
             navigate('/portal');
             break;
+          case 'support': //Support
+            toast.success('Login Success as a Support')
           case 'support':
             toast.success('Login Success as Support');
             navigate('/dashboard/supoverview');
             break;
+          case 'teacher': //Teacher
+            toast.success('Login Success as a Teacher')
           case 'teacher':
             toast.success('Login Success as a Teacher');
             navigate('/dashboard/overview');
+            break;
+          case 'parent': //Parent
+            toast.success('Login Success as a Parent')
+            navigate('/dashboard/paroverview');
             break;
           case 'parent':
             toast.success('Login Success as a Parent');
@@ -76,8 +101,10 @@ export default function Login() {
           default:
             toast.error('Invalid user role');
         }
+
       }
     } catch (error) {
+      if (error.message) {
       const prevAttempts = parseInt(Cookies.get(`failedAttempts_${email}`)) || 0;
       const newAttempts = prevAttempts + 1;
 
@@ -99,6 +126,10 @@ export default function Login() {
       setBtnDisabled(false);
     }
   };
+
+  const handleFacebookLogin = async () => {
+    window.location.href = `${apiUrl}/auth/facebook`;
+  }
 
   return (
     <Container component="main" maxWidth="xs" className="shadow-lg bg-white pt-1 pb-5">
@@ -148,6 +179,10 @@ export default function Login() {
             Login
           </Button>
         </Box>
+        <Button onClick={handleFacebookLogin}>
+          <RiFacebookBoxFill size={32} />
+          Login with facebook
+        </Button>
       </Box>
     </Container>
   );
