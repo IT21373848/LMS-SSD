@@ -25,6 +25,7 @@
     "jspdf-autotable": "^3.8.1",
     "react": "^18.2.0",
     "react-clickout-ts": "^2023.6.1",
+    "react-cookie": "^7.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.12.0",
     "react-material-ui-carousel": "^3.4.2",
@@ -36,6 +37,7 @@
     "validator": "^13.11.0"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",

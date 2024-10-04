@@ -22,6 +22,8 @@ import Cookies from 'js-cookie';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { apiUrl } from '../../utils/Constants';
+import { RiFacebookBoxFill } from 'react-icons/ri';
+import authAxios from '../../utils/authAxios';
 
 
 export default function Login() {
@@ -32,7 +34,7 @@ export default function Login() {
 
 
   const handleSubmit = async (event) => {
-  
+
     event.preventDefault();
     setBtnDisabled(true);
     const data = new FormData(event.currentTarget);
@@ -41,13 +43,13 @@ export default function Login() {
       password: data.get('password'),
     };
     try {
-      const isLoggedin = await axios.post(`${apiUrl}/login`,payload);
-      if(isLoggedin){
+      const isLoggedin = await axios.post(`${apiUrl}/login`, payload);
+      if (isLoggedin) {
         console.log(isLoggedin);
         Cookies.set('firstName', isLoggedin.data.firstName);
 
         // This is only for the PRIVATE MSG SHOW
-        if(isLoggedin.data.pvt == true){
+        if (isLoggedin.data.pvt == true) {
           Cookies.set('pvt', 'true');
         }
         login(isLoggedin.data.userRole, isLoggedin.data.token)
@@ -62,29 +64,29 @@ export default function Login() {
             navigate('/portal');
             break;
           case 'support': //Support
-          toast.success('Login Success as a Support')
+            toast.success('Login Success as a Support')
             navigate('/dashboard/supoverview');
             break;
           case 'teacher': //Teacher
-          toast.success('Login Success as a Teacher')
+            toast.success('Login Success as a Teacher')
             navigate('/dashboard/overview');
             break;
           case 'parent': //Parent
             toast.success('Login Success as a Parent')
-              navigate('/dashboard/paroverview');
-              break;
+            navigate('/dashboard/paroverview');
+            break;
         }
-        
+
       }
     } catch (error) {
-      if(error.message){
+      if (error.message) {
         toast.error(error.message);
       }
       toast.error(error.response.data.message);
-    }finally{
+    } finally {
       setBtnDisabled(false);
     }
-    
+
 
 
   };
@@ -92,6 +94,10 @@ export default function Login() {
   // const handleRoleChange = (e) => {
   //   setRole(e.target.value);
   // }
+
+  const handleFacebookLogin = async () => {
+    window.location.href = `${apiUrl}/auth/facebook`;
+  }
 
   return (
     <Container component="main" maxWidth="xs" className='shadow-lg bg-white pt-1 pb-5'>
@@ -169,6 +175,10 @@ export default function Login() {
             Login
           </Button>
         </Box>
+        <Button onClick={handleFacebookLogin}>
+          <RiFacebookBoxFill size={32} />
+          Login with facebook
+        </Button>
       </Box>
     </Container>
   );

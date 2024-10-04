@@ -2,12 +2,14 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
+import {useCookies} from 'react-cookie'
 const AuthContext = createContext();
 
+
 export const AuthProvider = ({ children }) => {
-  const initialUserRole = Cookies.get('userRole') || null;
-  const storedToken = Cookies.get('token') || null;
+  const [cookies, setCookie, removeCookie] = useCookies(['token', 'userRole']);
+  const initialUserRole = cookies?.userRole || null;
+  const storedToken = cookies?.token|| null;
   const navigate = useNavigate();
   const [userRole, setUserRole] = useState(initialUserRole);
   const [userToken, setUserToken] = useState(storedToken);
@@ -17,6 +19,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedUserRole = Cookies.get('userRole');
       const token = Cookies.get('token');
+      console.log('Cokies', storedUserRole, token)
       if (storedUserRole && token) {
         setUserRole(storedUserRole);
         setUserToken(token);
