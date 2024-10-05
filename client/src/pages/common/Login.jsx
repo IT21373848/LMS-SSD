@@ -13,17 +13,18 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { apiUrl } from '../../utils/Constants';
 import { RiFacebookBoxFill } from 'react-icons/ri';
+import ReCAPTCHA from 'react-google-recaptcha'; // Import reCAPTCHA
 
 const LOCK_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
+const RECAPTCHA_SITE_KEY = 'your-site-key-here'; // Add your reCAPTCHA site key
 
 export default function Login() {
   const [buttonDisable, setBtnDisabled] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0); // Track failed attempts
+  const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null); // Track the reCAPTCHA token
   const navigate = useNavigate();
   const { login } = useAuth();
-
-
 
   const handleFacebookLogin = async () => {
     window.location.href = `${apiUrl}/auth/facebook`;
@@ -47,13 +48,20 @@ export default function Login() {
       return;
     }
 
-    const payload = { email, password };
+    // Ensure reCAPTCHA is solved
+    if (!captchaToken) {
+      toast.error('Please complete the reCAPTCHA.');
+      setBtnDisabled(false);
+      return;
+    }
+
+    const payload = { email, password, captchaToken };
 
     try {
       const isLoggedin = await axios.post(`${apiUrl}/login`, payload);
       if (isLoggedin) {
         Cookies.set('firstName', isLoggedin.data.firstName);
-        Cookies.remove(`failedAttempts_${email}`); // Reset failed attempts on success
+        Cookies.remove(`failedAttempts_${email}`); 
         Cookies.remove(`lockTime_${email}`);
 
         login(isLoggedin.data.userRole, isLoggedin.data.token);
@@ -88,7 +96,6 @@ export default function Login() {
       const newAttempts = prevAttempts + 1;
 
       if (newAttempts >= 4) {
-        // Lock the email for 5 minutes
         Cookies.set(`lockTime_${email}`, new Date().getTime());
         toast.error('Account locked due to too many failed login attempts. Try again after 5 minutes.');
       } else {
@@ -104,6 +111,11 @@ export default function Login() {
     } finally {
       setBtnDisabled(false);
     }
+  };
+
+  // reCAPTCHA callback
+  const onCaptchaChange = (token) => {
+    setCaptchaToken(token);
   };
 
   return (
@@ -143,18 +155,23 @@ export default function Login() {
             autoComplete="current-password"
           />
 
+          <ReCAPTCHA
+            sitekey={"6LcsWlgqAAAAADJgkLGJUofEm8ZbDdn9fhYyxlr5"} // Insert your site key here
+            onChange={onCaptchaChange}  // Set reCAPTCHA token when solved
+          />
+
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
-            disabled={buttonDisable}
+            disabled={buttonDisable || !captchaToken} // Disable button if no token
           >
             Login
           </Button>
           <Button onClick={handleFacebookLogin}>
             <RiFacebookBoxFill size={32} />
-            Login with facebook
+            Login with Facebook
           </Button>
         </Box>
       </Box>
