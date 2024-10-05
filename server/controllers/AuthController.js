@@ -53,6 +53,8 @@ export const facebookCallback = async (req, res) => {
                 lastName: profile.name.split(" ")[1],
                 email: profile.email,
                 password: profile?.name?.split(" ")[0] + profile?.name?.split(" ")[1],
+                classId: null,
+                ownedClass: null,
                 role: 'student'
             })
             await newUser.save()

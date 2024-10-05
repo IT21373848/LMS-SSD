@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, RadioGroup, FormControlLabel, Radio, } from '@mui/material';
+import { Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Select, MenuItem, RadioGroup, FormControlLabel, Radio, Typography, } from '@mui/material';
 import AdminWelcomeCard from '../../components/AdminWelcomeCard';
 import DateInput from '../../components/DateInput';
 import authAxios from '../../utils/authAxios';
@@ -8,7 +8,7 @@ import { apiUrl } from '../../utils/Constants';
 import Loader from '../../components/Loader/Loader';
 import Cookies from 'js-cookie';
 import { StudentSchema } from '../../types/student';
-import {useValidation} from '../../hooks/useValidation'
+import { useValidation } from '../../hooks/useValidation'
 
 const StudentMNG = () => {
   const [open, setOpen] = useState(false);
@@ -21,7 +21,7 @@ const StudentMNG = () => {
   const [updateStatus, setUpdateStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const userRole = Cookies.get('userRole');
-  
+
   //UPDATE SUPPORT FORM DATA
   const [createStudentData, setCreateStudent] = useState({
     regNo: 0,
@@ -53,6 +53,7 @@ const StudentMNG = () => {
 
   const { isValid, errorCollection } = useValidation(StudentSchema, createStudentData);
   const [showValidationErrors, setShowValidationErrors] = useState(false);
+  const [newStudents, setNewStudents] = useState([]);
 
   const handleUpdateStudent = (row) => {
     setOpen2(true);
@@ -123,6 +124,9 @@ const StudentMNG = () => {
     const getAllClasses = async () => {
       try {
         const allClasses = await authAxios.get(`${apiUrl}/class`);
+        const newStd = await authAxios.get(`${apiUrl}/student/new-users`);
+        setNewStudents(newStd.data);
+        console.log(newStd.data)
         setAllClasses(allClasses.data);
         setIsLoading(false);
       } catch (error) {
@@ -415,6 +419,144 @@ const StudentMNG = () => {
       </TableContainer>
       {/* Students and class Table Ends Here... */}
 
+      <Typography variant="h6" style={{ marginTop: '20px' }}>New Students</Typography>
+      {/* NEW STD and class Table Start Here... */}
+      <TableContainer component={Paper} style={{ marginTop: '20px' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>FirstName</TableCell>
+              <TableCell>LastName</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Address</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          {
+            !isLoading ? <TableBody>
+              {newStudents.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.firstName}</TableCell>
+                  <TableCell>{row.lastName}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.address}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleUpdateStudent(row)}
+                    >
+                      View
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+              : <Loader />
+          }
+        </Table>
+      </TableContainer>
+      {/* NEW STD and class Table Ends Here... */}
+
+      <Dialog open={open2} onClose={handleClose2} sx={{ border: '2px solid #ccc' }}>
+        <DialogTitle sx={{ textAlign: 'center' }}>Edit Notice</DialogTitle>
+        <DialogContent>
+          <div>
+            <TextField
+              required
+              id="outlined-required"
+              label="Student First Name"
+              placeholder="e.g., Deneth"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              value={updateFormData.firstName}
+              onChange={e => setUpdateFormData({ ...updateFormData, firstName: e.target.value })}
+            />
+
+            <TextField
+              required
+              id="outlined-required"
+              label="Student Last Name"
+              placeholder="e.g., Pinsara"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              value={updateFormData.lastName}
+              onChange={e => setUpdateFormData({ ...updateFormData, lastName: e.target.value })}
+            />
+
+            {/* Student Email Input */}
+            <TextField
+              required
+              id="outlined-required"
+              label="Student Email"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              onChange={(e) => setUpdateFormData({ ...updateFormData, email: e.target.value })}
+              value={updateFormData.email}
+
+            />
+
+            {/* Student Email Input */}
+            <TextField
+              required
+              id="outlined-required"
+              label="Student Contact Number"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              onChange={(e) => setUpdateFormData({ ...updateFormData, contactNo: e.target.value })}
+              value={updateFormData.contactNo}
+
+            />
+
+            {/* Guardian Email Input */}
+            {/* <TextField
+                              required
+                              id="outlined-required"
+                              label="Guardian's Email"
+                              fullWidth
+                              margin="normal"
+                              variant="outlined"
+                              onChange={(e) => setUpdateFormData({ ...updateFormData, parentEmail: e.target.value })}
+                              value={updateFormData.parentEmail}
+
+                            /> */}
+
+            {/* Student Address Input */}
+            <TextField
+              required
+              id="outlined-required"
+              label="Address"
+              fullWidth
+              margin="normal"
+              variant="outlined"
+              onChange={(e) => setUpdateFormData({ ...updateFormData, address: e.target.value })}
+              value={updateFormData.address}
+
+            />
+
+            <Select
+              fullWidth
+              placeholder='Grade'
+              onChange={(e) => setUpdateFormData({ ...updateFormData, classId: e.target.value })}
+              value={updateFormData.classId}
+            >
+              {AllClasses.map((eachClass, index) => (
+                <MenuItem value={eachClass._id} key={index}>{eachClass.grade + ' - ' + eachClass.subClass}</MenuItem>
+              ))}
+            </Select>
+          </div>
+          <DialogActions style={{ justifyContent: 'center' }}>
+            <Button size="small" onClick={handleUpdate} variant="contained" color="primary">
+              Update
+            </Button>
+          </DialogActions>
+        </DialogContent>
+      </Dialog>
+
       {/* View Class Details Dialog Table Starts here.. */}
       <Dialog open={viewOpen} onClose={handleViewClose} maxWidth="xl">
         <DialogTitle sx={{ textAlign: 'center' }}>
@@ -443,111 +585,14 @@ const StudentMNG = () => {
                     <TableCell style={{ whiteSpace: 'nowrap' }}>{new Date(student.dob).toLocaleDateString()}</TableCell>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>{student.contactNo}</TableCell>
                     <TableCell style={{ whiteSpace: 'nowrap' }}>{student.address}</TableCell>
-    
+
                     <TableCell style={{ whiteSpace: 'nowrap' }}>
                       <Button variant="contained" color="primary" sx={{ marginRight: 2 }}
                         onClick={() => handleUpdateStudent(student)}>
                         Update
                       </Button>
 
-                      <Dialog open={open2} onClose={handleClose2} sx={{ border: '2px solid #ccc' }}>
-                        <DialogTitle sx={{ textAlign: 'center' }}>Edit Notice</DialogTitle>
-                        <DialogContent>
-                          <div>
-                          <TextField
-                              required
-                              id="outlined-required"
-                              label="Student First Name"
-                              placeholder="e.g., Deneth"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              value={createStudentData.firstName}
-                              onChange={e => handleCreateChange('firstName', e.target.value)}
-                            />
 
-                            <TextField
-                              required
-                              id="outlined-required"
-                              label="Student Last Name"
-                              placeholder="e.g., Pinsara"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              value={createStudentData.lastName}
-                              onChange={e => handleCreateChange('lastName', e.target.value)}
-                            />
-
-                            {/* Student Email Input */}
-                            <TextField
-                              required
-                              id="outlined-required"
-                              label="Student Email"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, email: e.target.value })}
-                              value={updateFormData.email}
-
-                            />
-
-                            {/* Student Email Input */}
-                            <TextField
-                              required
-                              id="outlined-required"
-                              label="Student Contact Number"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, contactNo: e.target.value })}
-                              value={updateFormData.contactNo}
-
-                            />
-
-                            {/* Guardian Email Input */}
-                            {/* <TextField
-                              required
-                              id="outlined-required"
-                              label="Guardian's Email"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, parentEmail: e.target.value })}
-                              value={updateFormData.parentEmail}
-
-                            /> */}
-
-                            {/* Student Address Input */}
-                            <TextField
-                              required
-                              id="outlined-required"
-                              label="Address"
-                              fullWidth
-                              margin="normal"
-                              variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, address: e.target.value })}
-                              value={updateFormData.address}
-
-                            />
-
-                            <Select
-                              fullWidth
-                              placeholder='Grade'
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, classId: e.target.value })}
-                              value={updateFormData.classId}
-                            >
-                              {AllClasses.map((eachClass, index) => (
-                                <MenuItem value={eachClass._id} key={index}>{eachClass.grade + ' - ' + eachClass.subClass}</MenuItem>
-                              ))}
-                            </Select>
-                          </div>
-                          <DialogActions style={{ justifyContent: 'center' }}>
-                            <Button size="small" onClick={handleUpdate} variant="contained" color="primary">
-                              Update
-                            </Button>
-                          </DialogActions>
-                        </DialogContent>
-                      </Dialog>
                       {userRole !== 'support' && (
                         <Button variant="contained" color="error" onClick={() => handleDeleteStudent(student._id)}>
                           Delete
