@@ -36,8 +36,8 @@ export const AuthProvider = ({ children }) => {
     setUserRole(role);
     setUserToken(token)
     // Save the user role in cookies
-    Cookies.set('userRole', role, { secure: true, httpOnly: true, expires: 1, path: '/' });
-    Cookies.set('token', token, {secure: true, httpOnly: true, expires: 1, path: '/' });
+    Cookies.set('userRole', role, { expires: 1, path: '/' });
+    Cookies.set('token', token, { expires: 1, path: '/' });
   };
 
   const logout = () => {
