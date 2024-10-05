@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const storedUserRole = Cookies.get('userRole');
       const token = Cookies.get('token');
-      console.log('Cokies', storedUserRole, token)
       if (storedUserRole && token) {
         setUserRole(storedUserRole);
         setUserToken(token);

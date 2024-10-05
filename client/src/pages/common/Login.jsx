@@ -20,8 +20,6 @@ const RECAPTCHA_SITE_KEY = 'your-site-key-here'; // Add your reCAPTCHA site key
 
 export default function Login() {
   const [buttonDisable, setBtnDisabled] = useState(false);
-  const [failedAttempts, setFailedAttempts] = useState(0);
-  const [isLocked, setIsLocked] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null); // Track the reCAPTCHA token
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -37,17 +35,6 @@ export default function Login() {
     const email = data.get('email');
     const password = data.get('password');
 
-    const lockTime = Cookies.get(`lockTime_${email}`);
-    const currentTime = new Date().getTime();
-
-    // Check if the email is locked
-    if (lockTime && currentTime - lockTime < LOCK_TIME) {
-      const remainingTime = Math.ceil((LOCK_TIME - (currentTime - lockTime)) / 1000);
-      toast.error(`Account locked. Please try again in ${remainingTime} seconds.`);
-      setBtnDisabled(false);
-      return;
-    }
-
     // Ensure reCAPTCHA is solved
     if (!captchaToken) {
       toast.error('Please complete the reCAPTCHA.');
@@ -61,8 +48,6 @@ export default function Login() {
       const isLoggedin = await axios.post(`${apiUrl}/login`, payload);
       if (isLoggedin) {
         Cookies.set('firstName', isLoggedin.data.firstName);
-        Cookies.remove(`failedAttempts_${email}`); 
-        Cookies.remove(`lockTime_${email}`);
 
         login(isLoggedin.data.userRole, isLoggedin.data.token);
 
@@ -92,21 +77,11 @@ export default function Login() {
         }
       }
     } catch (error) {
-      const prevAttempts = parseInt(Cookies.get(`failedAttempts_${email}`)) || 0;
-      const newAttempts = prevAttempts + 1;
 
-      if (newAttempts >= 4) {
-        Cookies.set(`lockTime_${email}`, new Date().getTime());
-        toast.error('Account locked due to too many failed login attempts. Try again after 5 minutes.');
+      if (error?.response?.data?.message) {
+        toast.error(error?.response?.data?.message);
       } else {
-        Cookies.set(`failedAttempts_${email}`, newAttempts);
-        toast.error(`Login failed. You have ${4 - newAttempts} attempt(s) remaining.`);
-      }
-
-      if (error.message) {
-        toast.error(error.message);
-      } else {
-        toast.error(error.response.data.message);
+        toast.error(error?.message);
       }
     } finally {
       setBtnDisabled(false);
