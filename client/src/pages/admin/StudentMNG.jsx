@@ -6,9 +6,9 @@ import authAxios from '../../utils/authAxios';
 import { toast } from 'react-toastify';
 import { apiUrl } from '../../utils/Constants';
 import Loader from '../../components/Loader/Loader';
-import validator from 'validator';
 import Cookies from 'js-cookie';
-
+import { StudentSchema } from '../../types/student';
+import {useValidation} from '../../hooks/useValidation'
 
 const StudentMNG = () => {
   const [open, setOpen] = useState(false);
@@ -21,8 +21,7 @@ const StudentMNG = () => {
   const [updateStatus, setUpdateStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const userRole = Cookies.get('userRole');
-  const [passwordError, setPasswordError] = useState(false);
-  const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+  
   //UPDATE SUPPORT FORM DATA
   const [createStudentData, setCreateStudent] = useState({
     regNo: 0,
@@ -30,7 +29,7 @@ const StudentMNG = () => {
     lastName: "",
     gender: "",
     contactNo: '',
-    dob: '',
+    dob: null,
     parentId: null,
     email: "",
     password: "",
@@ -51,6 +50,9 @@ const StudentMNG = () => {
     classId: '',
     address: "",
   });
+
+  const { isValid, errorCollection } = useValidation(StudentSchema, createStudentData);
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
 
   const handleUpdateStudent = (row) => {
     setOpen2(true);
@@ -77,6 +79,7 @@ const StudentMNG = () => {
 
   const handleClose = () => {
     setOpen(false);
+    setShowValidationErrors(false);
   };
 
   const handleClose2 = () => {
@@ -95,19 +98,11 @@ const StudentMNG = () => {
   };
 
   const handleSubmit = async () => {
+    if (!isValid) {
+      setShowValidationErrors(true);
+      return;
+    }
     try {
-      const currentDate = new Date();
-      const Dob = new Date(createStudentData.dob)
-      if (!validator.isEmail(createStudentData.email)) {
-        throw Error('Email should be valid email')
-      }
-      const differenceInYears = currentDate.getFullYear() - Dob.getFullYear();
-      if (differenceInYears < 6) {
-        throw Error('Student Age Must Be More Than 6 Years')
-      }
-      if (passwordError) {
-        throw Error('Password validation failed')
-      }
       const result = await authAxios.post(`${apiUrl}/student/create-student`, createStudentData);
       if (result) {
         toast.success('Account Created Successfully')
@@ -117,6 +112,8 @@ const StudentMNG = () => {
     } catch (error) {
       toast.error(error.message);
       toast.error(error.response.data.message)
+    } finally {
+      setShowValidationErrors(false);
     }
 
   };
@@ -169,15 +166,6 @@ const StudentMNG = () => {
     }
   };
 
-  const passwordChange = (e) => {
-
-    if(!passwordPattern.test(e.target.value)){
-      setPasswordError(true);
-    }else{
-      setPasswordError(false);
-    }
-    handleCreateChange('password', e.target.value)
-  }
 
   return (
     <div>
@@ -214,7 +202,8 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.firstName}
               onChange={e => handleCreateChange('firstName', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.firstName}
+              helperText={showValidationErrors ? errorCollection.firstName : ''}
             />
 
             {/* Student Name Input */}
@@ -228,7 +217,8 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.lastName}
               onChange={e => handleCreateChange('lastName', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.lastName}
+              helperText={showValidationErrors ? errorCollection.lastName : ''}
             />
 
             {/* Student DOB Input */}
@@ -236,6 +226,8 @@ const StudentMNG = () => {
               label='Date of birth'
               value={createStudentData.dob}
               onChange={e => handleCreateChange('dob', e)}
+              error={showValidationErrors && !!errorCollection.dob}
+              helperText={showValidationErrors ? errorCollection.dob : ''}
             />
 
             {/* Student Email Input */}
@@ -250,7 +242,8 @@ const StudentMNG = () => {
               type='email'
               value={createStudentData.email}
               onChange={e => handleCreateChange('email', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.email}
+              helperText={showValidationErrors ? errorCollection.email : ''}
             />
 
             <TextField
@@ -263,11 +256,12 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.contactNo}
               onChange={e => handleCreateChange('contactNo', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.contactNo}
+              helperText={showValidationErrors ? errorCollection.contactNo : ''}
             />
 
             {/* Student Password Input */}
-            <label htmlFor='password' className='text-xs'>Password should contain a letter and a number EX: test1234  </label>
+            <label htmlFor='password'>  </label>
             <TextField
               required
               id="outlined-password-input"
@@ -276,10 +270,11 @@ const StudentMNG = () => {
               placeholder="Enter new password"
               fullWidth
               margin="normal"
-              error={passwordError}
               variant="outlined"
               value={createStudentData.password}
-              onChange={passwordChange}
+              onChange={(e) => handleCreateChange('password', e.target.value)}
+              error={showValidationErrors && !!errorCollection.password}
+              helperText={showValidationErrors ? errorCollection.password : ''}
             />
 
             {/* Student Password Re-Enter */}
@@ -292,6 +287,8 @@ const StudentMNG = () => {
               fullWidth
               margin="normal"
               variant="outlined"
+              error={showValidationErrors && !!errorCollection.confirmPassword}
+              helperText={showValidationErrors ? errorCollection.confirmPassword : ''}
             />
 
             <TextField
@@ -304,7 +301,8 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.contactNo}
               onChange={e => handleCreateChange('contactNo', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.contactNo}
+              helperText={showValidationErrors ? errorCollection.contactNo : ''}
             />
 
             {/* Guardian Email Input */}
@@ -318,7 +316,8 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.parentEmail}
               onChange={e => handleCreateChange('parentEmail', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.parentEmail}
+              helperText={showValidationErrors ? errorCollection.parentEmail : ''}
             />
 
             {/* Student Address Input */}
@@ -332,7 +331,8 @@ const StudentMNG = () => {
               variant="outlined"
               value={createStudentData.address}
               onChange={e => handleCreateChange('address', e.target.value)}
-
+              error={showValidationErrors && !!errorCollection.address}
+              helperText={showValidationErrors ? errorCollection.address : ''}
             />
 
             <RadioGroup
@@ -340,6 +340,8 @@ const StudentMNG = () => {
               name="controlled-radio-buttons-group"
               value={createStudentData.gender}
               onChange={(e) => handleCreateChange('gender', e.target.value)}
+              error={showValidationErrors && !!errorCollection.gender}
+              helperText={showValidationErrors ? errorCollection.gender : ''}
             >
               <FormControlLabel value="female" control={<Radio />} label="Female" />
               <FormControlLabel value="male" control={<Radio />} label="Male" />
@@ -350,6 +352,8 @@ const StudentMNG = () => {
               placeholder='Grade'
               value={createStudentData.classId}
               onChange={e => handleCreateChange('classId', e.target.value)}
+              error={showValidationErrors && !!errorCollection.classId}
+              helperText={showValidationErrors ? errorCollection.classId : ''}
             >
               {AllClasses.map((eachClass, index) => (
                 <MenuItem value={eachClass._id} key={index}>{eachClass.grade + ' - ' + eachClass.subClass}</MenuItem>
@@ -450,7 +454,7 @@ const StudentMNG = () => {
                         <DialogTitle sx={{ textAlign: 'center' }}>Edit Notice</DialogTitle>
                         <DialogContent>
                           <div>
-                            <TextField
+                          <TextField
                               required
                               id="outlined-required"
                               label="Student First Name"
@@ -458,12 +462,10 @@ const StudentMNG = () => {
                               fullWidth
                               margin="normal"
                               variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, firstName: e.target.value })}
-                              value={updateFormData.firstName}
-
+                              value={createStudentData.firstName}
+                              onChange={e => handleCreateChange('firstName', e.target.value)}
                             />
 
-                            {/* Student Name Input */}
                             <TextField
                               required
                               id="outlined-required"
@@ -472,9 +474,8 @@ const StudentMNG = () => {
                               fullWidth
                               margin="normal"
                               variant="outlined"
-                              onChange={(e) => setUpdateFormData({ ...updateFormData, lastName: e.target.value })}
-                              value={updateFormData.lastName}
-
+                              value={createStudentData.lastName}
+                              onChange={e => handleCreateChange('lastName', e.target.value)}
                             />
 
                             {/* Student Email Input */}
