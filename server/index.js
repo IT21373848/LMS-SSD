@@ -14,6 +14,7 @@ import ActivityRouter from './routes/ActivityRoutes.js';
 import parentRoutes from './routes/ParentRoutes.js';
 import MarkRouter from './routes/MarkRoutes.js';
 import FeesRouter from './routes/FeesRoutes.js';
+import PDFRoutes from './routes/PDFRoutes.js';
 dotenv.config();
 
 const port = process.env.PORT || 80 ;
@@ -30,6 +31,7 @@ app.get('/', async (req,res)=>{
 
 //Put other routes here
 app.use('/pay', FeesRouter);
+app.use('/pdf',PDFRoutes)
 //Common Routes
 app.use('/',userRouter);
 app.use('/class', classRoutes);
