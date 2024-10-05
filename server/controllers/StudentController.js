@@ -70,17 +70,21 @@ export const getStudentDetails = async (req, res) => {
 // Get Students by Class ID
 export const getStudentsByClassId = async (req, res) => {
   const { classId } = req.params; // Assuming classId is passed as a route parameter
-
+  if(!classId){
+    throw Error('Class Id Required')
+  }
   try {
     // Find students with the specified classId and role set to 'student'
     const students = await UserModel.find({
       classId,
       role: 'student',
-    }).populate('classId');
+    })
+      .select('-password')  // Exclude the password field
+      .populate('classId');
 
     res.status(200).json(students);
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
@@ -90,12 +94,12 @@ export const getStudentsByClassId = async (req, res) => {
 export const getAllStudents = async (req, res) => {
   try {
     // Find all users with the role set to 'student'
-    const students = await UserModel.find({ role: 'student' }).populate('classId');
+    const students = await UserModel.find({ role: 'student' }).select('-password').populate('classId');
 
 
     res.status(200).json(students);
   } catch (error) {
-    console.error(error);
+    console.error(error.message);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };

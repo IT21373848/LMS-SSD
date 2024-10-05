@@ -4,8 +4,8 @@ import { sendEmail } from "../utils/sendEmail.js";
 import RateLimitModel from "../models/RateLimitModel.js";
 
 //PASS EMAIL ADDRESS HERE AND THIS WILL GENERATE A JWT TOKEN
-export const createToken = (email) => {
-    return jwt.sign({ email }, process.env.SECRET_KEY,);
+export const createToken = (email, role = 'student') => {
+    return jwt.sign({ email, role }, process.env.SECRET_KEY, { expiresIn: '1d' });
 }
 
 export const verifyToken = (token) => {
@@ -57,8 +57,8 @@ export const Login = async (req, res) => {
             //IT IS THE PVT MESSAGE TEACHER
             isPvt = true
         }
-        const token = createToken(id);
-        if(isRate){
+        const token = createToken(id, isExist?.role);
+        if (isRate) {
             await RateLimitModel.findByIdAndUpdate(isRate._id, { atempts: 0 })
         }
         //await sendEmail('nimsaramahagedara@gmail.com', "TEST EMAIL", { name: 'NIMSARA MAHAGEDARA', description: 'TEST DESCRIPTION', }, "./template/emailtemplate.handlebars");
@@ -133,7 +133,7 @@ export const sendNewEmail = async (req, res) => {
 
 export const getNewUsers = async (req, res) => {
     try {
-        const users = await UserModel.find({classId:null,role:'student'});
+        const users = await UserModel.find({ classId: null, role: 'student' });
         res.status(200).json(users);
     } catch (error) {
         console.log(error);

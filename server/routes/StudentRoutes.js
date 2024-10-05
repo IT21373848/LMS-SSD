@@ -15,9 +15,10 @@ studentRouter.get('/get-subjects', LoginValidator, getAllSubjectsInClassUsingStI
 studentRouter.get('/get-classmates', LoginValidator, getClassMatesUsingStId);
 studentRouter.get('/get-subject/:id', getSubjectTeacher);
 studentRouter.get('/new-users', getNewUsers);
+studentRouter.get('/students', getAllStudents)
 studentRouter.post('/create-student', CreateStudentAccount);
 studentRouter.get('/:classId', getStudentsByClassId);
-studentRouter.get('/students', getAllStudents);
+;
 studentRouter.put('/update-student/:id', updateStudentById);
 studentRouter.delete('/delete-student/:id', deleteStudentById);
 studentRouter.get('/get-marks-by-student/:id', getMarksByStudentId);
